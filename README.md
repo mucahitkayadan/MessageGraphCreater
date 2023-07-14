@@ -40,6 +40,11 @@ To generate a chat graph, follow these steps:
 9.  When prompted, enter the chat type (1 for Telegram, 2 for WhatsApp).
 10.  The script will analyze the chat history file and generate a message count graph for the selected chat type.
 
+Examples
+-----------
+![Telegram](/chatGraph.png)
+![Whatsapp](/whatsappChatGraph.png)
+
 Contributing
 ------------
 
