@@ -37,7 +37,7 @@ def parse_telegram_chat(file_path):
 
 
 def parse_whatsapp_chat(file_path):
-    pattern = r'^(\d{2}/\d{2}/\d{2}), (\d{2}:\d{2}) - (.+?): (.+)$'
+    pattern = r'^(\d{1,2}/\d{1,2}/\d{2}), (\d{2}:\d{2}) - (.+?): (.+)$'
     message_counts = {}
     person_names = set()  # Store unique person names
     
