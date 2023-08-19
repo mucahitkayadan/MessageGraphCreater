@@ -35,6 +35,40 @@ def parse_telegram_chat(file_path):
         
         return dates, counts, person_names_str
 
+def parse_telegram_chat_iphone(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+        
+        message_counts = {}
+        person_names = set()  # Store unique person IDs
+        
+        for message in data['messages']:
+            date_str = message['date'].split('T')[0]
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            
+            if 'from' in message:
+                sender = message['from']
+            elif 'actor' in message:
+                sender = message['actor']
+            else:
+                print("Sender could not be found in JSON file!")
+                continue
+            
+            person_names.add(sender)  # Collect unique person IDs
+            
+            if date in message_counts:
+                message_counts[date] += 1
+            else:
+                message_counts[date] = 1
+        
+        sorted_counts = sorted(message_counts.items(), key=lambda x: x[0])
+        
+        dates = [str(date) for date, count in sorted_counts]
+        counts = [count for date, count in sorted_counts]
+        
+        person_names_str = ' and '.join(person_names)
+        
+        return dates, counts, person_names_str
 
 def parse_whatsapp_chat(file_path):
     pattern = r'^(\d{1,2}/\d{1,2}/\d{2}), (\d{2}:\d{2}) - (.+?): (.+)$'
@@ -108,7 +142,7 @@ def parse_whatsapp_chat_iphone(file_path):
 def get_message_counts(chat_type, iphone_or_not):
     if chat_type == 1:  # Telegram
         if iphone_or_not ==1:
-            return parse_telegram_chat('telegram_chat.json')
+            return parse_telegram_chat_iphone('telegram_chat.json')
         elif iphone_or_not ==2:
             return parse_telegram_chat('telegram_chat.json')
         else:
