@@ -138,6 +138,43 @@ def parse_whatsapp_chat_iphone(file_path):
     
     return dates, counts, person_names_str
 
+def parse_whatsapp_chat_android(file_path):
+    pattern = r'^(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) - (.+?): (.+)$'
+    message_counts = {}
+    person_names = set()  # Store unique person names
+    
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            match = re.match(pattern, line)
+            
+            if match:
+                date_str = match.group(1)
+                time_str = match.group(2)
+                sender = match.group(3)
+                message = match.group(4)
+                
+                person_names.add(sender)  # Collect unique person names
+                
+                datetime_str = f'{date_str} {time_str}'
+
+
+                date = datetime.strptime(datetime_str, '%d.%m.%Y %H:%M').date()
+                main
+                
+                if date in message_counts:
+                    message_counts[date] += 1
+                else:
+                    message_counts[date] = 1
+    
+    sorted_counts = sorted(message_counts.items(), key=lambda x: x[0])
+    
+    dates = [str(date) for date, count in sorted_counts]
+    counts = [count for date, count in sorted_counts]
+    
+    person_names_str = ' and '.join(person_names)
+    
+    return dates, counts, person_names_str
+
 # Get the message counts for the chosen chat type
 def get_message_counts(chat_type, iphone_or_not):
     if chat_type == 1:  # Telegram
