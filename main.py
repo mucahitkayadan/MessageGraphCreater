@@ -35,6 +35,40 @@ def parse_telegram_chat(file_path):
         
         return dates, counts, person_names_str
 
+def parse_telegram_chat_iphone(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+        
+        message_counts = {}
+        person_names = set()  # Store unique person IDs
+        
+        for message in data['messages']:
+            date_str = message['date'].split('T')[0]
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            
+            if 'from' in message:
+                sender = message['from']
+            elif 'actor' in message:
+                sender = message['actor']
+            else:
+                print("Sender could not be found in JSON file!")
+                continue
+            
+            person_names.add(sender)  # Collect unique person IDs
+            
+            if date in message_counts:
+                message_counts[date] += 1
+            else:
+                message_counts[date] = 1
+        
+        sorted_counts = sorted(message_counts.items(), key=lambda x: x[0])
+        
+        dates = [str(date) for date, count in sorted_counts]
+        counts = [count for date, count in sorted_counts]
+        
+        person_names_str = ' and '.join(person_names)
+        
+        return dates, counts, person_names_str
 
 def parse_whatsapp_chat(file_path):
     pattern = r'^(\d{1,2}/\d{1,2}/\d{2}), (\d{2}:\d{2}) - (.+?): (.+)$'
@@ -70,6 +104,40 @@ def parse_whatsapp_chat(file_path):
     
     return dates, counts, person_names_str
 
+def parse_whatsapp_chat_iphone(file_path):
+    pattern = r'\[(\d{2}\.\d{2}\.\d{4}), (\d{2}:\d{2}:\d{2})\] (.+?): (.+)'
+    message_counts = {}
+    person_names = set()  # Store unique person names
+    
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            match = re.match(pattern, line)
+            
+            if match:
+                date_str = match.group(1)
+                time_str = match.group(2)
+                sender = match.group(3)
+                message = match.group(4)
+                
+                person_names.add(sender)  # Collect unique person names
+                
+                datetime_str = f'{date_str} {time_str}'
+                date = datetime.strptime(datetime_str, '%d.%m.%Y %H:%M:%S').date()
+                
+                if date in message_counts:
+                    message_counts[date] += 1
+                else:
+                    message_counts[date] = 1
+    
+    sorted_counts = sorted(message_counts.items(), key=lambda x: x[0])
+    
+    dates = [str(date) for date, count in sorted_counts]
+    counts = [count for date, count in sorted_counts]
+    
+    person_names_str = ' and '.join(person_names)
+    
+    return dates, counts, person_names_str
+
 def parse_whatsapp_chat_android(file_path):
     pattern = r'^(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) - (.+?): (.+)$'
     message_counts = {}
@@ -88,7 +156,10 @@ def parse_whatsapp_chat_android(file_path):
                 person_names.add(sender)  # Collect unique person names
                 
                 datetime_str = f'{date_str} {time_str}'
+
+
                 date = datetime.strptime(datetime_str, '%d.%m.%Y %H:%M').date()
+                main
                 
                 if date in message_counts:
                     message_counts[date] += 1
@@ -105,25 +176,36 @@ def parse_whatsapp_chat_android(file_path):
     return dates, counts, person_names_str
 
 # Get the message counts for the chosen chat type
-def get_message_counts(chat_type):
+def get_message_counts(chat_type, iphone_or_not):
     if chat_type == 1:  # Telegram
-        return parse_telegram_chat('telegram_chat.json')
+        if iphone_or_not ==1:
+            return parse_telegram_chat_iphone('telegram_chat.json')
+        elif iphone_or_not ==2:
+            return parse_telegram_chat('telegram_chat.json')
+        else:
+            raise ValueError('Invalid phone type')
     elif chat_type == 2:  # WhatsApp
-        return parse_whatsapp_chat('whatsapp_chat.txt')
+        if iphone_or_not ==1:
+            return parse_whatsapp_chat_iphone('whatsapp_chat.txt')
+        elif iphone_or_not ==2:
+            return parse_whatsapp_chat('whatsapp_chat.txt')
+        else:
+            raise ValueError('Invalid phone type')
     else:
         raise ValueError('Invalid chat type')
 
 # Get the user's input for chat type
 def get_user_input():
     chat_type = int(input('Enter chat type (1 for Telegram, 2 for WhatsApp): '))
-    return chat_type
+    iphone_or_not=int(input('Is your phone Iphone ? (1 for Yes , 2 for No): '))
+    return chat_type, iphone_or_not
 
 # Main function
 def main():
-    chat_type = get_user_input()
+    (chat_type, iphone_or_not) = get_user_input()
     
     try:
-        dates, counts, person_names_str = get_message_counts(chat_type)
+        dates, counts, person_names_str = get_message_counts(chat_type, iphone_or_not)
         
         plt.figure(figsize=(10, 6))
         plt.plot(dates, counts, marker='o')
